@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reset — Daily Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#EDEAE2;
+    --ink-dim:#9B9A93;
+    --ground:#17181A;
+    --ground-raised:#1F2123;
+    --rule:#2E3033;
+    --amber:#D9A441;
+    --green:#7A9B6E;
+    --rust:#A85A3F;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:'Barlow',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:520px;
+    margin:0 auto;
+    padding:32px 20px 80px;
+  }
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom:1px solid var(--rule);
+    padding-bottom:18px;
+    margin-bottom:28px;
+  }
+  .brand{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:26px;
+    letter-spacing:-0.02em;
+  }
+  .date{
+    font-size:13px;
+    color:var(--ink-dim);
+    text-align:right;
+    line-height:1.4;
+  }
+  .streak-row{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:6px;
+  }
+  .streak-num{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:56px;
+    line-height:1;
+    color:var(--amber);
+  }
+  .streak-label{
+    font-size:14px;
+    color:var(--ink-dim);
+    padding-bottom:6px;
+  }
+  .streak-sub{
+    font-size:13px;
+    color:var(--ink-dim);
+    margin-bottom:32px;
+  }
+  .section-title{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-dim);
+    margin:0 0 14px;
+    font-weight:600;
+  }
+  .item{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    padding:16px 0;
+    border-bottom:1px solid var(--rule);
+    cursor:pointer;
+    user-select:none;
+  }
+  .item:last-child{border-bottom:none;}
+  .check{
+    flex:0 0 26px;
+    width:26px;
+    height:26px;
+    border:1.5px solid var(--ink-dim);
+    border-radius:4px;
+    margin-top:2px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .check svg{
+    width:14px;
+    height:14px;
+    opacity:0;
+    transition:opacity .15s ease;
+  }
+  .item[data-state="done"] .check{
+    background:var(--green);
+    border-color:var(--green);
+  }
+  .item[data-state="done"] .check svg{opacity:1;}
+  .item[data-state="skipped"] .check{
+    background:var(--ground-raised);
+    border-color:var(--rust);
+  }
+  .item[data-state="skipped"] .check::after{
+    content:"";
+    width:10px;
+    height:1.5px;
+    background:var(--rust);
+  }
+  .item-body{flex:1;}
+  .item-title{
+    font-size:16px;
+    font-weight:500;
+    margin-bottom:2px;
+  }
+  .item[data-state="done"] .item-title{
+    color:var(--ink-dim);
+    text-decoration:line-through;
+    text-decoration-color:var(--rule);
+  }
+  .item-time{
+    font-size:12.5px;
+    color:var(--ink-dim);
+  }
+  .item-skip{
+    flex:0 0 auto;
+    font-size:12px;
+    color:var(--ink-dim);
+    padding:4px 8px;
+    border:1px solid var(--rule);
+    border-radius:4px;
+    background:none;
+    align-self:center;
+  }
+  .item-skip:active{background:var(--ground-raised);}
+  .week{
+    display:flex;
+    gap:6px;
+    margin:28px 0 36px;
+  }
+  .week-day{
+    flex:1;
+    text-align:center;
+  }
+  .week-day-label{
+    font-size:10.5px;
+    color:var(--ink-dim);
+    margin-bottom:6px;
+  }
+  .week-day-bar{
+    height:34px;
+    border-radius:3px;
+    background:var(--ground-raised);
+    border:1px solid var(--rule);
+    display:flex;
+    align-items:flex-end;
+    overflow:hidden;
+  }
+  .week-day-fill{
+    width:100%;
+    background:var(--amber);
+    opacity:0.85;
+  }
+  footer{
+    margin-top:36px;
+    font-size:12.5px;
+    color:var(--ink-dim);
+    line-height:1.6;
+    border-top:1px solid var(--rule);
+    padding-top:18px;
+  }
+  .reset-link{
+    color:var(--ink-dim);
+    text-decoration:underline;
+    cursor:pointer;
+    background:none;
+    border:none;
+    font-size:12.5px;
+    font-family:inherit;
+    padding:0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">Reset</div>
+    <div class="date" id="todayLabel"></div>
+  </header>
+
+  <div class="streak-row">
+    <div class="streak-num" id="streakNum">0</div>
+    <div class="streak-label">day streak</div>
+  </div>
+  <div class="streak-sub" id="streakSub">Show up today — that's the only job.</div>
+
+  <div class="section-title">Today</div>
+  <div id="itemList"></div>
+
+  <div class="section-title" style="margin-top:32px;">Last 7 days</div>
+  <div class="week" id="weekBar"></div>
+
+  <footer>
+    Skipped isn't failed — it just means today didn't happen. Tomorrow resets clean either way.
+    <br><br>
+    <button class="reset-link" id="resetBtn">Clear all data</button>
+  </footer>
+
+</div>
+
+<script>
+const ITEMS = [
+  { id:'phone_out', title:'Phone charges outside the room', time:'Tonight, before sleep' },
+  { id:'wake_step', title:'Alarm 7:30 — get up, step outside 2 min', time:'Morning' },
+  { id:'class_plan', title:'Decide tonight which class you\'ll attend', time:'Tonight, for tomorrow' },
+  { id:'college', title:'Show up, sit down — no pressure to speak', time:'Daytime' },
+  { id:'python', title:'20 min Python, right after gym — stop at 20 no matter what', time:'Evening, post-gym' },
+  { id:'winddown', title:'One show, then phone leaves the room', time:'Night' },
+];
+
+const todayKey = () => new Date().toISOString().slice(0,10);
+const STORE_KEY = 'reset_routine_v1';
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function saveData(data){
+  localStorage.setItem(STORE_KEY, JSON.stringify(data));
+}
+
+let data = loadData();
+const today = todayKey();
+if(!data[today]) data[today] = {};
+
+function cycleState(id){
+  const cur = data[today][id];
+  if(!cur) data[today][id] = 'done';
+  else if(cur === 'done') delete data[today][id];
+  saveData(data);
+  render();
+}
+function skipItem(id, evt){
+  evt.stopPropagation();
+  const cur = data[today][id];
+  if(cur === 'skipped') delete data[today][id];
+  else data[today][id] = 'skipped';
+  saveData(data);
+  render();
+}
+
+function computeStreak(){
+  let streak = 0;
+  let d = new Date();
+  while(true){
+    const key = d.toISOString().slice(0,10);
+    const day = data[key];
+    const doneCount = day ? Object.values(day).filter(v => v === 'done').length : 0;
+    if(doneCount >= 3){
+      streak++;
+      d.setDate(d.getDate()-1);
+    } else if(key === today){
+      // today doesn't break the streak yet, just doesn't count
+      d.setDate(d.getDate()-1);
+      continue;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function render(){
+  document.getElementById('todayLabel').textContent = new Date().toLocaleDateString('en-IN',{ weekday:'long', day:'numeric', month:'long' });
+
+  const list = document.getElementById('itemList');
+  list.innerHTML = '';
+  ITEMS.forEach(item => {
+    const state = data[today][item.id] || 'none';
+    const row = document.createElement('div');
+    row.className = 'item';
+    row.setAttribute('data-state', state);
+    row.innerHTML = `
+      <div class="check">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="#17181A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="item-body">
+        <div class="item-title">${item.title}</div>
+        <div class="item-time">${item.time}</div>
+      </div>
+      <button class="item-skip">skip</button>
+    `;
+    row.addEventListener('click', () => cycleState(item.id));
+    row.querySelector('.item-skip').addEventListener('click', (e) => skipItem(item.id, e));
+    list.appendChild(row);
+  });
+
+  const streak = computeStreak();
+  document.getElementById('streakNum').textContent = streak;
+  const subs = [
+    "Show up today — that's the only job.",
+    "One more day on the board.",
+    "Momentum's building. Keep the chain going.",
+    "This is what consistency actually looks like."
+  ];
+  document.getElementById('streakSub').textContent = streak === 0 ? subs[0] : subs[Math.min(streak, subs.length-1)];
+
+  const weekBar = document.getElementById('weekBar');
+  weekBar.innerHTML = '';
+  for(let i=6;i>=0;i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const key = d.toISOString().slice(0,10);
+    const day = data[key] || {};
+    const doneCount = Object.values(day).filter(v=>v==='done').length;
+    const pct = Math.round((doneCount / ITEMS.length) * 100);
+    const col = document.createElement('div');
+    col.className = 'week-day';
+    col.innerHTML = `
+      <div class="week-day-label">${d.toLocaleDateString('en-IN',{weekday:'narrow'})}</div>
+      <div class="week-day-bar"><div class="week-day-fill" style="height:${pct}%"></div></div>
+    `;
+    weekBar.appendChild(col);
+  }
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if(confirm('Clear all saved progress? This cannot be undone.')){
+    localStorage.removeItem(STORE_KEY);
+    data = { [today]: {} };
+    render();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
